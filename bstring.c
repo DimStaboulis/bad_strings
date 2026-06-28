@@ -1,5 +1,7 @@
 #include "bstring.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 bstring* bstring_create(char* buffer,int size) 
 {
@@ -17,17 +19,8 @@ char* bstring_convert(const bstring* bstring_in)
     if (bstring_in->size > 0 && bstring_in->text != NULL) 
     {
         char* cstring = (char*)malloc((sizeof(char) * bstring_in->size) + 1);
-
-        char* cursor = cstring;
-        int index = 0;
-        while (index < bstring_in->size) 
-        {
-            *cursor = bstring_in->text[index];
-            cursor++;
-            index++;
-        }
-        *cursor = '\0';
-
+        memcpy(cstring, bstring_in->text, bstring_in->size);
+        cstring[bstring_in->size] = '\0';
         return cstring;
     }
     
@@ -38,26 +31,35 @@ int bstring_dup(bstring* destination,const bstring* source)
 {
     if (source->size > 0 && source->text != NULL) 
     {
-        if (destination->text == NULL) 
+        if (destination->text != NULL) 
         {
-            if (destination->size > 0) 
-            {
-                destination->text = (char*)malloc(sizeof(char) * destination->size);
-            }
-            else 
-            {
-                return 1;
-            }
+            free(destination->text);
         }
 
-        int index = 0;
-        int dup_size = bsutil_least_size(source->size,destination->size);
-       
-        while(index < dup_size) 
+        destination->size = source->size;
+        destination->text = (char*)malloc(sizeof(char)*destination->size);
+
+        bstring_assign(destination,source->text,destination->size);
+
+        return 0;
+    }
+    
+    return 1;
+}
+
+int bstring_copy(bstring* destination, const bstring* source) 
+{
+    if (source->size > 0 && source->text != NULL) 
+    {
+        if (destination->text == NULL) 
         {
-            destination->text[index] = source->text[index];
-            index++;
+            return 1;
         }
+
+        int copy_size = bsutil_least_size(source->size,destination->size);
+        destination->size = copy_size;
+       
+        memcpy(destination->text, source->text, copy_size);
 
         return 0;
     }
@@ -78,13 +80,10 @@ int bstring_assign(bstring* bstring_in,char* buffer,int size)
         if (bstring_in->text != NULL) {free(bstring_in->text);}
         char *new_text = (char*)malloc(sizeof(char) * bstring_in->size);
         int index = 0;
-        char *cursor = new_text;
-        while (index < bstring_in->size) 
-        {
-            *cursor = buffer[index];
-            cursor++;
-            index++;
-        }
+        char *temp_buf = new_text;
+
+        memcpy(temp_buf, buffer, bstring_in->size);
+
 
         bstring_in->text = new_text;
         return 0;   
@@ -106,6 +105,6 @@ int bstring_compare(const bstring* bstring_in1, const bstring* bstring_in2)
 
 int bsutil_least_size(int in1,int in2) 
 {
-     if (in1 < in2) return in1;
-        else return in2;
+    if (in1 < in2) return in1;
+    return in2;
 }
