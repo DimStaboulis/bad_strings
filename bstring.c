@@ -94,12 +94,14 @@ int bstring_assign(bstring* bstring_in,char* buffer,int size)
 
 int bstring_compare(const bstring* bstring_in1, const bstring* bstring_in2) 
 {
+    int index;
     int compare_limit = bsutil_least_size(bstring_in1->size,bstring_in2->size);
-    for (int index = 0; index < compare_limit; index++) 
+    for (index = 0; index < compare_limit; index++) 
     {
-        if (bstring_in1->[index] != bstring_in2->text[index]) return bstring_in1->[index] - bstring_in2->text[index];
+        if (bstring_in1->text[index] != bstring_in2->text[index]) return bstring_in1->text[index] - bstring_in2->text[index];
     }
     
+    return bstring_in1->size - bstring_in2->size;
 }
 
 int bsutil_least_size(int in1,int in2) 
